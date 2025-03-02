@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Contraseñas Seguro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f4f4f4; }
+        .container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); width: 400px; }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; margin-bottom: 5px; }
+        #password { padding: 10px; width: calc(100% - 22px); border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #strength-bar { height: 10px; background-color: #ddd; border-radius: 4px; margin-top: 5px; }
+        #strength-bar div { height: 100%; border-radius: 4px; }
+        .history { margin-top: 20px; }
+        .history ul { list-style: none; padding: 0; }
+        .history li { background-color: #f0f0f0; padding: 8px; margin-bottom: 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generador de Contraseñas Seguro</h1>
+        <div class="input-group">
+            <label for="length">Longitud:</label>
+            <input type="number" id="length" value="16" min="16">
+        </div>
+        <div class="input-group">
+            <label><input type="checkbox" id="uppercase" checked> Mayúsculas</label>
+            <label><input type="checkbox" id="lowercase" checked> Minúsculas</label>
+            <label><input type="checkbox" id="numbers" checked> Números</label>
+            <label><input type="checkbox" id="symbols" checked> Símbolos</label>
+            <label><input type="checkbox" id="words"> Palabras</label>
+        </div>
+        <button id="generate">Generar</button>
+        <button id="copy">Copiar</button>
+        <input type="text" id="password" readonly>
+        <div id="strength-bar"><div id="strength"></div></div>
+        <div class="history">
+            <h3>Historial</h3>
+            <ul id="history-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+        const numberChars = '0123456789';
+        const symbolChars = '!@#$%^&*()_+~`|}{[]\:;?><,./-=';
+        const words = ['apple', 'banana', 'cherry', 'date', 'elderberry', 'fig', 'grape', 'honeydew']; // Diccionario de palabras
+
+        function generatePassword() {
+            let length = document.getElementById('length').value;
+            let includeUppercase = document.getElementById('uppercase').checked;
+            let includeLowercase = document.getElementById('lowercase').checked;
+            let includeNumbers = document.getElementById('numbers').checked;
+            let includeSymbols = document.getElementById('symbols').checked;
+            let includeWords = document.getElementById('words').checked;
+
+            let chars = '';
+            if (includeUppercase) chars += uppercaseChars;
+            if (includeLowercase) chars += lowercaseChars;
+            if (includeNumbers) chars += numberChars;
+            if (includeSymbols) chars += symbolChars;
+
+            let password = '';
+            if (includeWords) {
+                for (let i = 0; i < length / 2; i++) {
+                    password += words[Math.floor(Math.random() * words.length)];
+                }
+            } else {
+                for (let i = 0; i < length; i++) {
+                    password += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+            }
+
+            document.getElementById('password').value = password;
+            updateStrength(password);
+            addToHistory(password);
+        }
+
+        function updateStrength(password) {
+            let strength = 0;
+            if (password.length >= 16) strength++;
+            if (password.match(/[a-z]/)) strength++;
+            if (password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^a-zA-Z0-9]/)) strength++;
+
+            let strengthBar = document.getElementById('strength');
+            strengthBar.style.width = (strength / 5) * 100 + '%';
+            strengthBar.style.backgroundColor = strength < 3 ? 'red' : strength < 5 ? 'orange' : 'green';
+        }
+
+        function addToHistory(password) {
+            let historyList = document.getElementById('history-list');
+            let li = document.createElement('li');
+            li.textContent = password;
+            historyList.prepend(li); // Añadir al principio
+            if (historyList.children.length > 5) { // Limitar el historial a 5 contraseñas
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        document.getElementById('generate').addEventListener('click', generatePassword);
+        document.getElementById('copy').addEventListener('click', () => {
+            document.getElementById('password').select();
+            document.execCommand('copy');
+        });
+    </script>
+</body>
+</html>
